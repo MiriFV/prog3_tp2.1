@@ -1,6 +1,40 @@
-class Customer {}
+class Customer {
+    constructor(id,name,email){
+        this.id=id;
+        this.name=name;
+        this.email=email;
+    }
+    get info(){
+        return  this.name + " | Correo: "+this.email; 
+    }
+}
 
-class Reservation {}
+class Reservation {
+
+    constructor(id,customer,date,guests){
+        this.id=id;
+        this.customer=customer;
+        this.date=new Date(date);
+        this.guests=guests;
+    }
+    get info(){
+        const cita= this.date;
+        const year = cita.getFullYear();        // Año
+        const month = cita.getMonth() + 1;      // Mes (0-11, por lo que añadimos 1)
+        const day = cita.getDate();             // Día del mes (1-31)
+        const hours = cita.getHours();          // Hora (0-23)
+        const minutes = cita.getMinutes();      // Minutos (0-59)
+        return `Date: ${day}/${month}/${year} Hour: ${hours}:${minutes}. Customer: ${this.customer.info}. Guests: ${this.guests}`;
+    }
+    static validateReservation(obj){
+          const {fecha, comensales} = obj;
+          const actualDate = new Date();
+            if (new Date(fecha)<actualDate || comensales <= 0){
+                return false;
+            }
+            return true;
+    }
+}
 
 class Restaurant {
     constructor(name) {
