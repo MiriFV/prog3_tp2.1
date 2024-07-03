@@ -110,10 +110,18 @@ const restaurant = new Restaurant("El Lojal Kolinar");
 
 const customer1 = new Customer(1, "Shallan Davar", "shallan@gmail.com");
 const reservation1 = new Reservation(1, customer1, "2024-12-31T20:00:00", 4);
-
-if (Reservation.validateReservation(reservation1.date, reservation1.guests)) {
+const customer2 = new Customer(2, "Allan Qvar", "allan@gmail.com");
+const reservation2 = new Reservation(2, customer1, "2020-12-29T20:00:00", 0);
+console.log(reservation2)
+if (Reservation.validateReservation({ fecha: reservation1.date, comensales: reservation1.guests })) {
     restaurant.addReservation(reservation1);
     restaurant.render();
 } else {
     alert("Datos de reserva inválidos");
+}
+if (Reservation.validateReservation({ fecha: reservation2.date, comensales: reservation2.guests })) {
+    restaurant.addReservation(reservation2);
+    restaurant.render();
+} else {
+    alert("Datos de reserva 2 inválidos");
 }
