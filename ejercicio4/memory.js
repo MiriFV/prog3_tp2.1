@@ -31,6 +31,24 @@ class Card {
         const cardElement = this.element.querySelector(".card");
         cardElement.classList.remove("flipped");
     }
+    //Matodos publicos que manipulan metodos privados
+    toggleFlip(){
+        if(this.isFlipped){
+            this.isFlipped=false;
+            this.#unflip();
+        }else{
+            this.isFlipped=true;
+            this.#flip();
+        }
+    }
+    matches(otherCard){
+        if(this.name==otherCard.name){
+             return true;
+        }
+        else{
+            return false;
+        }
+    }
 }
 
 class Board {
@@ -74,6 +92,25 @@ class Board {
             this.onCardClick(card);
         }
     }
+        //Matodos publicos que manipulan metodos privados
+    shuffleCards(){
+        for (let i = this.cards.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [this.cards[i], this.cards[j]] = [this.cards[j], this.cards[i]];
+        }
+    }
+    reset(){
+        this.flipDownAllCards();
+        this.shuffleCards();
+        this.render();
+    }
+    flipDownAllCards(){
+         for(const card in this.cards){
+            if(card.isFlipped){
+                card.toggleFlip();
+            }
+         }
+    }
 }
 
 class MemoryGame {
@@ -81,6 +118,11 @@ class MemoryGame {
         this.board = board;
         this.flippedCards = [];
         this.matchedCards = [];
+        this.movimiento = 0;
+        this.tiempo = 0;
+        this.timer = null;
+        this.score = 0;
+        this.startedTime = false;
         if (flipDuration < 350 || isNaN(flipDuration) || flipDuration > 3000) {
             flipDuration = 350;
             alert(
@@ -91,9 +133,24 @@ class MemoryGame {
         this.board.onCardClick = this.#handleCardClick.bind(this);
         this.board.reset();
     }
-
+    async start() {
+        if (!this.startedTime){
+            this.startedTime = true;
+            const actTiempo = () => {
+                this.tiempo++;
+                document.getElementById('time').textContent = `Tiempo: ${this.tiempo}`
+                this.timer = setTimeout(actTiempo, 1000);
+            }    
+            actTiempo();
+        }
+    }
     #handleCardClick(card) {
         if (this.flippedCards.length < 2 && !card.isFlipped) {
+            if (!this.startedTime){
+                this.start();
+            }
+            this.movimiento++;
+            document.getElementById('moves').textContent = `Movimientos: ${this.movimiento}`
             card.toggleFlip();
             this.flippedCards.push(card);
 
@@ -101,6 +158,49 @@ class MemoryGame {
                 setTimeout(() => this.checkForMatch(), this.flipDuration);
             }
         }
+    }
+    checkForMatch(){
+        const [card1, card2] = this.flippedCards;
+        if (card1.matches(card2)) {
+            this.matchedCards.push(card1, card2);
+            this.flippedCards = [];
+
+            if (this.matchedCards.length === this.board.cards.length) {
+                this.handleComplete();
+            }
+        } else {
+            setTimeout(() => {
+                card1.toggleFlip();
+                card2.toggleFlip();
+                this.flippedCards = [];
+            }, this.flipDuration);
+        }
+    }
+    handleComplete() {
+        const factorMov = 100;
+        const factorTiempo = 10;
+        this.score = Math.abs(this.tiempo * factorTiempo - this.movimiento * factorMov)
+        alert(`Has completado el juego en ${this.movimiento} movimientos y ${this.tiempo} segundos \n
+        Puntuación: ${this.score}`);
+        this.resetGame();
+        this.resetTiempoMov();
+    }
+    resetGame(){
+        this.flippedCards = [];
+        this.matchedCards = [];
+        this.board.flipDownAllCards();
+        clearTimeout(this.timer);
+        setTimeout(() => {
+            this.board.reset();
+            this.startedTime = false;
+        },this.flipDuration);
+        this.resetTiempoMov();
+    }
+    resetTiempoMov() {
+        this.tiempo = 0;
+        this.movimiento = 0;
+        document.getElementById('time').textContent = `Tiempo: ${this.tiempo}`;
+        document.getElementById('moves').textContent = `Movimientos: ${this.movimiento}`;
     }
 }
 
